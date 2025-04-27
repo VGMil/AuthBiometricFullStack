@@ -1,0 +1,85 @@
+services:
+#####################################################
+# backend
+#####################################################
+  backend:
+      build:
+        context: ./Backend
+        dockerfile: backend.Dockerfile
+      container_name: backend
+      volumes:
+        - ./Backend:/var/www/html
+      networks:
+        - auth-network
+      depends_on:
+        - db
+#####################################################
+# nginx
+#####################################################
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Backend:/var/www/html
+      - ./Nginx/laravel.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - auth-network
+    depends_on:
+      - backend
+
+#####################################################
+# DATABASE (MySQL)
+#####################################################
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./Mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
+    networks:
+      - auth-network
+#####################################################
+# PHPMYADMIN (MySQL)
+#####################################################
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    networks:
+      - auth-network
+
+#####################################################
+# FrontEnd (React)
+#####################################################            
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: frontend.Dockerfile
+    container_name: frontend
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - auth-network
+    depends_on:
+      - backend
+
+volumes:
+  db_data: {}
+networks:
+  auth-network:
+    driver: bridge
