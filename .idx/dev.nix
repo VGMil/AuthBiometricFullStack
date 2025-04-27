@@ -19,6 +19,17 @@
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       # "vscodevim.vim"
+      "shufo.vscode-blade-formatter"
+      "onecentlin.laravel-blade"
+      "codingyu.laravel-goto-view"
+      "onecentlin.laravel5-snippets"
+      "bmewburn.vscode-intelephense-client"
+      "bradlc.vscode-tailwindcss"
+      "vscode-icons-team.vscode-icons"
+      "laravel.vscode-laravel"
+      "dsznajder.es7-react-js-snippets"
+      "formulahendry.auto-rename-tag"
+      "wix.vscode-import-cost"
     ];
     # Enable previews
     previews = {

@@ -1,27 +1,30 @@
 FROM php:8.2-fpm-alpine
 
+# Instalar dependencias necesarias
 RUN apk update && apk add \
     curl \
     libpng-dev \
     libxml2-dev \
     zip \
-    unzip \
-    shadow
+    unzip
 
+# Instalar extensiones de PHP necesarias
 RUN docker-php-ext-install pdo pdo_mysql \
     && apk --no-cache add nodejs npm
 
+# Copiar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
+# Cambiar a usuario root para modificar permisos
 USER root
 
-RUN chmod 777 -R /var/www/
-
-RUN useradd -G www-data,root -u 1000 -d /home/developer developer
-RUN mkdir -p /home/developer/.composer && \
-    chown -R developer:developer /home/developer
-WORKDIR /var/www
+# Crear directorios necesarios y establecer permisos
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chown -R developer:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-USER developer
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Establecer el directorio de trabajo
+WORKDIR /var/www
+
+# Cambiar al usuario www-data para ejecutar Laravel
+USER www-data
