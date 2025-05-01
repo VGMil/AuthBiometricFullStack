@@ -9,7 +9,6 @@ services:
       container_name: backend
       volumes:
         - ./Backend:/var/www/html
-
       networks:
         - auth-network
       depends_on:
