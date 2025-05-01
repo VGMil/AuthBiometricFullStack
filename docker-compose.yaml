@@ -9,6 +9,7 @@ services:
       container_name: backend
       volumes:
         - ./Backend:/var/www/html
+
       networks:
         - auth-network
       depends_on:
@@ -23,6 +24,7 @@ services:
         context: ./Backend
         dockerfile: backend.Dockerfile
       container_name: reverb
+      working_dir: /var/www/html
       command: php artisan reverb:start --host=0.0.0.0 --port=8080
       restart: unless-stopped
       volumes:
@@ -111,6 +113,12 @@ services:
 
 volumes:
   db_data: {}
+  nginx_config:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./Nginx/laravel.conf
 networks:
   auth-network:
     driver: bridge

@@ -36,10 +36,15 @@ RUN composer install --no-scripts --no-autoloader --no-interaction --prefer-dist
 RUN composer dump-autoload --optimize
 
 # Dar permisos apropiados
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Exponer puerto 9000
 EXPOSE 9000
 
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
