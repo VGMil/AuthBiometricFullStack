@@ -1,30 +1,45 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm
 
-# Instalar dependencias necesarias
-RUN apk update && apk add \
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    git \
     curl \
     libpng-dev \
+    libonig-dev \
     libxml2-dev \
     zip \
-    unzip
+    unzip \
+    libzip-dev
 
-# Instalar extensiones de PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql \
-    && apk --no-cache add nodejs npm
+# Limpiar caché
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copiar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+# Instalar extensiones PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Cambiar a usuario root para modificar permisos
-USER root
+# Configurar PHP-FPM para escuchar en el puerto 9000
+RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/g' /usr/local/etc/php-fpm.d/www.conf
 
-# Crear directorios necesarios y establecer permisos
-RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Get Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Establecer el directorio de trabajo
-WORKDIR /var/www
+# Establecer directorio de trabajo
+WORKDIR /var/www/html
 
-# Cambiar al usuario www-data para ejecutar Laravel
-USER www-data
+# Copiar archivos de la aplicación
+COPY . .
+
+# Instalar dependencias
+RUN composer install --no-scripts --no-autoloader --no-interaction --prefer-dist
+
+# Generar autoloader optimizado
+RUN composer dump-autoload --optimize
+
+# Dar permisos apropiados
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Exponer puerto 9000
+EXPOSE 9000
+
+CMD ["php-fpm"]

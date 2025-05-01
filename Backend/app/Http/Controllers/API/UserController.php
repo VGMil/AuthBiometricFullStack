@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+
     public function index(){
         $users=User::all();
         if($users->isEmpty()){
@@ -55,6 +56,40 @@ class UserController extends Controller
             [
                 'data'=> $new_user,
             ],201
+        );
+    }
+
+    public function show($id){
+        $user = Users::find($id);
+        if(!$user){
+            return response()->json(
+                [
+                    'message'=> 'El usuario no ha sido encontrado',
+                ],404
+            );
+        }
+        return response()->json(
+            [
+                'data'=>$user,
+            ],200
+    );
+    }
+
+    public function destroy($id){
+        $user = Users::find($id);
+        if(!user){
+            return response()->json(
+                [
+                    'message'=>'El usuario no ha sido encontrado',
+                ],404);
+        }
+
+        $user->delete();
+
+        return response()->json(
+            [
+                'message'=> 'Usuario eliminado con exito',
+            ],200
         );
     }
 

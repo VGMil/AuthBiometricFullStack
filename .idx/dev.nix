@@ -29,7 +29,6 @@
       "laravel.vscode-laravel"
       "dsznajder.es7-react-js-snippets"
       "formulahendry.auto-rename-tag"
-      "wix.vscode-import-cost"
     ];
     # Enable previews
     previews = {
